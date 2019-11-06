@@ -23,6 +23,7 @@ pages:
 ```
 """
 
+from ._completions import Completions
 from ._parameter_distribution import ParameterDistribution
 from ._parameter_correlation import ParameterCorrelation
 from ._disk_usage import DiskUsage
@@ -39,6 +40,7 @@ from ._reservoir_simulation_timeseries_onebyone import (
 
 
 __all__ = [
+    "Completions",
     "ParameterDistribution",
     "ParameterCorrelation",
     "DiskUsage",

@@ -15,6 +15,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     entry_points={
         "webviz_config_containers": [
+            "Completions = webviz_subsurface.containers:Completions",
             "ParameterDistribution = webviz_subsurface.containers:ParameterDistribution",
             "ParameterCorrelation = webviz_subsurface.containers:ParameterCorrelation",
             "DiskUsage = webviz_subsurface.containers:DiskUsage",
