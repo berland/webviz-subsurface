@@ -31,6 +31,7 @@ This needs ensembles configured in container_settings
         self.dropdown_ens_id = f"dropdown-ens-{self.uid}"
         self.dropdown_real_id = f"dropdown-real-{self.uid}"
         self.set_callbacks(app)
+        print("INitialized completions")
 
     @property
     def layout(self):
@@ -46,7 +47,8 @@ This needs ensembles configured in container_settings
         #    Output(self.chart_id, "figure"), [Input(self.plot_type_id, "value")]
         #)
         def _update_plot(plot_type):
-            return
+            print("updating plot")
+            print(get_realization_compdat(self.ensemble_paths, "foo", 0))
             if plot_type == "Pie chart":
                 data = [
                     {
@@ -60,7 +62,6 @@ This needs ensembles configured in container_settings
                     }
                 ]
                 layout = {}
-
             layout["height"] = 800
             layout["width"] = 1000
             layout["font"] = {"family": "Equinor"}
@@ -75,15 +76,26 @@ This needs ensembles configured in container_settings
 def scratch_ensemble(ensemble_name, ensemble_path):
     return fmu.ensemble.ScratchEnsemble(ensemble_name, ensemble_path)
 
+def get_compdat(kwargs):
+    """Function to be used as callback to an ensemble.
+
+    The function will we called individually on each realization, and
+    it can get a handle to the realization object in question through
+    kwargs["realization"]
+
+    Upon errors, it should return empty dataframes.
+    """
+    eclfiles = kwargs["realization"].get_eclfiles()
+    if not eclfiles:
+        print("Error, could not obtain Eclipse input file for realization x")
+        return pd.DataFrame()
+    return ecl2df.compdat.df(eclfiles)
+
 @CACHE.memoize(timeout=CACHE.TIMEOUT)
 @webvizstore
 def get_realization_compdat(ensemble_paths, ensemble_name, realization) -> pd.DataFrame:
-
-    try:
-        ens = scratch_ensemble(ens_name, ens_path)
-        df = pd.read_csv(os.path.join(scratch_dir, "disk_usage.csv"))
-    except FileNotFoundError:
-        raise FileNotFoundError(f"No disk usage file found at {scratch_dir}")
-
-    last_date = sorted(list(df["date"].unique()))[-1]
-    return df.loc[df["date"] == last_date]
+    print("extracting compdat")
+    assert isinstance(realization, int)
+    ens = scratch_ensemble(ens_name, ens_path)
+    real = ens[realization]
+    return real.apply(get_compdat)
